@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 ## @file main.py
 # @brief dextools checker code source
-from collections import OrderedDict
 
 import requests
 import json
@@ -34,10 +33,10 @@ def sort_by_top10_seller(data):
     sorted_data.sort(key= lambda i: i['amountETH'], reverse=True)
     return sorted_data[0:10]
 
-def get_count_with_less_05(data):
+def get_count_with_less_005(data):
     count = 0
     for item in data:
-        if item['amountETH'] <= 0.5:
+        if item['amountETH'] <= 0.05:
             count += 1
     return count
 
@@ -72,6 +71,7 @@ def parse_data_from_file(path=None):
         #print(data)
         return data
 
+
 def get_dextools_data(pair_address, mode="web"):
     data = []
     if mode == "web":
@@ -89,7 +89,7 @@ def get_dextools_data(pair_address, mode="web"):
     top10_seller = sort_by_top10_seller(data)
     #print(json.dumps(top10_seller))
 
-    count_less_05 = get_count_with_less_05(data)
+    count_less_05 = get_count_with_less_005(data)
     #print("count_less_05 = {0}".format(count_less_05))
 
     links_count = get_links_count(pair_address)

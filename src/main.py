@@ -11,8 +11,10 @@ import json
 import time
 import traceback
 
-from json_filter import json_filter, transform_data
+from json_filter import json_filter
 from dextools_checker import get_dextools_data
+from honeypot_ckecker import isHoneyPot
+from tokensniffer_checker import get_tokensniffer_data
 
 
 TMP_LOCAL_DIR = "tmp"
@@ -121,12 +123,41 @@ def parse_data_from_file(mode, path=None):
             return data
 
 
+def check_known_id(data):
+    with open("checked_ids_storage.json", 'r') as validated_data_file:
+        checked_ids_list = json.load(validated_data_file)
+        return [i for i in data if not
+                next((j for j in checked_ids_list if j["pairAddress"] == i["pairAddress"]), None)]
+
+
+def add_more_known_id(data):
+    if len(data) == 0:
+        return
+    checked_ids_list = []
+    with open("checked_ids_storage.json", 'r') as validated_data_file:
+        checked_ids_list = json.load(validated_data_file)
+    print("Len before add knows ids {0}".format(len(checked_ids_list)))
+
+    for item in data:
+        for j in checked_ids_list:
+            if j["pairAddress"] == item["pairAddress"]:
+                break
+        checked_ids_list.append({"pairAddress": item["pairAddress"], "isInterest": False})
+        print("checked_ids_list {0}".format(len(checked_ids_list)))
+
+    print("Len after add knows ids {0}".format(len(checked_ids_list)))
+
+    with open('checked_ids_storage.json', 'w') as f:
+        json.dump(checked_ids_list, f)
+
+
 if __name__ == '__main__':
     init()
     chainId = "ethereum"
     mode = None
-    #mode = "sync"
+    mode = "sync"
     data = None
+    run_forse = True
 
     if mode == "async":
         asyncio.run(run_async())
@@ -136,23 +167,58 @@ if __name__ == '__main__':
     else:
         data = parse_data_from_file("from_file", "tmp/json_data.json")
 
-    data = json_filter(data)
-    data = transform_data(data)
-    #print(json.dumps(data))
-    print(len(data))
+    if not run_forse:
+        print("Len before check knows ids {0}".format(len(data)))
+        data = check_known_id(data)
+        print("Len after check knows ids {0}".format(len(data)))
+        add_more_known_id(data)
 
+    if len(data) == 0 and not run_forse:
+        print("No new coins received. All received coins have already been verified. Script completing")
+        exit(0)
+
+
+    print("Start filtering")
+    data = json_filter(data)
+
+
+    ### dextools
     for item in data:
         time.sleep(1)
-        #print("pairAddress = {0}".format(item["pairAddress"]))
-        result = get_dextools_data(item["pairAddress"], mode="file")
-        #print(result)
+        result = get_dextools_data(item["pairAddress"])#, mode="file")
         item["dextools"] = result
 
     data = [i for i in data if "top10_bauer" in i["dextools"]]
-
     with open('tmp/dexscreener_and_dextools_data.json', 'w') as f:
         json.dump(data, f)
-    print(json.dumps(data[0]))
+    #print(json.dumps(data[0]))
+
+
+    ### honypot
+    print("Start  honypot checker, length = {0}".format(len(data)))
+    for item in data:
+        time.sleep(1)
+        result = isHoneyPot(item["pairAddress"])
+        item["isHoneyPot"] = result
+
+    data = [i for i in data if not i["isHoneyPot"]]
+
+    with open('tmp/honeypot_data.json', 'w') as f:
+        json.dump(data, f)
+
+
+    ### tokensniffer
+    print("Start tokensniffer, length = {0}".format(len(data)))
+    for item in data:
+        time.sleep(1)
+        result = get_tokensniffer_data(item["baseToken"]["address"])
+        print(result)
+        item["tokensniffer"] = result
+
+    data = [i for i in data if "is_flagged" in i["tokensniffer"]]
+
+    print("Result data length = {0}".format(len(data)))
+    print(json.dumps(data))
 
 
 
