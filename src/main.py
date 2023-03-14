@@ -12,6 +12,7 @@ import time
 import traceback
 
 from json_filter import json_filter, transform_data
+from dextools_checker import get_dextools_data
 
 
 TMP_LOCAL_DIR = "tmp"
@@ -137,6 +138,21 @@ if __name__ == '__main__':
 
     data = json_filter(data)
     data = transform_data(data)
-    print(json.dumps(data))
+    #print(json.dumps(data))
+    print(len(data))
+
+    for item in data:
+        time.sleep(1)
+        #print("pairAddress = {0}".format(item["pairAddress"]))
+        result = get_dextools_data(item["pairAddress"], mode="file")
+        #print(result)
+        item["dextools"] = result
+
+    data = [i for i in data if "top10_bauer" in i["dextools"]]
+
+    with open('tmp/dexscreener_and_dextools_data.json', 'w') as f:
+        json.dump(data, f)
+    print(json.dumps(data[0]))
+
 
 
