@@ -56,14 +56,14 @@ def get_links_count(pair_address):
         result = result['data']
     else:
         #print("Empty json with social links: {0}".format(uri))
-        return 0
+        return [0, []]
     if not result or len(result) == 0 or not result[0]["token"] or not result[0]["token"]["links"]:
         print("Incorrect json with social links")
-        return 0
+        return [0, []]
     links = result[0]["token"]["links"]
     #print(json.dumps(links))
     count = len({k: v for k, v in links.items() if v != ""}.keys())
-    return count
+    return [count, [v for k, v in links.items() if v != ""]]
 
 def parse_data_from_file(path=None):
     with open(path, 'r') as json_file:
@@ -92,7 +92,7 @@ def get_dextools_data(pair_address, mode="web"):
     count_less_05 = get_count_with_less_005(data)
     #print("count_less_05 = {0}".format(count_less_05))
 
-    links_count = get_links_count(pair_address)
+    links = get_links_count(pair_address)
     #print("links_count = {0}".format(links_count))
 
     return {
@@ -100,7 +100,8 @@ def get_dextools_data(pair_address, mode="web"):
         "top10_seller": top10_seller,
         "count_less_05": count_less_05,
         "total_count": len(data),
-        "links_count": links_count,
+        "links_count": links[0],
+        "links": links[1],
     }
 
 

@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+## @file main.py
+# @brief honeypot checker code source
+
+
 from tabulate import tabulate
 
 main_thing = "...data.items"
@@ -12,14 +17,28 @@ count_less_05 = "count_less_05"
 total_count = "len(data)"
 links_count = "links_count"
 
-data = [
-    ["1", "OWNER", "Liquidity", "M.cap","Tax","Age","Website","Telegram","LP Lock","Total Count","Gas","WARNING"],
-    ["2", "OWNER", "Liquidity", "M.cap","Tax","Age","Website","Telegram","LP Lock","Total Count","Gas","WARNING"],
-    ["3", "OWNER", "Liquidity", "M.cap","Tax","Age","Website","Telegram","LP Lock","Total Count","Gas","WARNING"],
-]
 
-columns = [
- "ETH", "OWNER", "Liquidity", "M.cap","Tax","Age","Website","Telegram","LP Lock","Total Count","Gas","WARNING"
- ]
+def draw_table(data):
 
-print(tabulate(data,headers=columns,showindex="always"))
+    data_list = []
+
+    for i in data:
+        data_list.append([
+            i["Name"], i["Address"], i["Liquidity"], i["Total/Less"], i["Social"],
+            i["Honeypot"], i["TSflag"], i["TSsellable"], i["Buy fee"], i["Sell fee"],
+            i["Risk Level"], i["Score"], i["CreatedAt"], i["TSLink"],
+        ])
+
+    columns = [
+        "Name", "Address", "Liquidity", "Total/Less", "Social", "Honeypot", "TSflag", "TSsellable", "Buy fee",
+        "Sell fee", "Risk Level", "Score", "CreatedAt", "TSLink"
+     ]
+
+    print(tabulate(data_list, headers=columns, showindex="always"))
+
+
+if __name__ == '__main__':
+
+    draw_table({})
+
+

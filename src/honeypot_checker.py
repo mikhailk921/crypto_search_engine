@@ -22,7 +22,7 @@ def isHoneyPot(pair_address):
         print("Incorrect json: {0}".format(uri))
 
     isHoneyPot = json.dumps(json.loads(x.text)['IsHoneypot']) == "true"
-    print("isHoneyPot = {0};  {1}".format(isHoneyPot, pair_address))
+    #print("isHoneyPot = {0};  {1}".format(isHoneyPot, pair_address))
 
     return isHoneyPot
 
@@ -31,6 +31,7 @@ if __name__ == '__main__':
     mode = "file"
     data = {}
 
-    result = isHoneyPot("0x67f0A54A019E1De8d6Bc5B52E48F09d76e815F99")
+    #result = isHoneyPot("0x67f0A54A019E1De8d6Bc5B52E48F09d76e815F99")
+    result = isHoneyPot("0x514910771af9ca656af840dff83e8264ecf986ca")
 
     print(result)

@@ -7,8 +7,8 @@ from time import sleep
 import requests
 
 
-def get_tokensniffer_data(pairAddress):
-    url = "https://tokensniffer.com/api/v2/tokens/1/{0}?include_metrics=true&include_tests=false&apikey=dafe4651dc541b6516e142219c947cf9a8e70884".format(pairAddress)
+def get_tokensniffer_data(baseTokenAddress):
+    url = "https://tokensniffer.com/api/v2/tokens/1/{0}?include_metrics=true&include_tests=false&apikey=dafe4651dc541b6516e142219c947cf9a8e70884".format(baseTokenAddress)
     headers = {"accept": "application/json"}
 
     counter = 0
@@ -17,14 +17,17 @@ def get_tokensniffer_data(pairAddress):
         counter += 1
         response = requests.get(url, headers=headers)
         text = response.text
-        print(text)
+        #print(text)
 
         if text == "Contract not found":
-            print("tokensniffer: Contract {0} not found...".format(pairAddress))
+            print("\ntokensniffer: Contract {0} not found...".format(baseTokenAddress))
             return {}
+        if "html" in text:
+            sleep(1)
+            continue
         result = json.loads(text)
         if "status" in result.keys() and result["status"] == "pending":
-            print("tokensniffer: status pending, restart...")
+            #print("tokensniffer: status pending, restart...")
             sleep(1)
             continue
         break
@@ -34,7 +37,7 @@ def get_tokensniffer_data(pairAddress):
 
     return {
         "is_flagged": False if result["is_flagged"] == "false" else True,
-        "is_sellable": False if result["swap_simulation"]["is_sellable"] == "false" else True,
+        "is_sellable": False if result["swap_simulation"]["is_sellable"] == "false" else True, # need true
         "buy_fee": result["swap_simulation"]["buy_fee"],
         "sell_fee": result["swap_simulation"]["sell_fee"],
         "is_source_verified": False if result["contract"]["is_source_verified"] == "false" else True,

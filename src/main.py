@@ -3,6 +3,8 @@
 # @brief search engine code source
 
 import asyncio
+import math
+import sys
 from threading import Thread
 
 import websocket
@@ -11,10 +13,11 @@ import json
 import time
 import traceback
 
-from json_filter import json_filter
+from json_filter import json_filter, transform_result_data
 from dextools_checker import get_dextools_data
-from honeypot_ckecker import isHoneyPot
+from honeypot_checker import isHoneyPot
 from tokensniffer_checker import get_tokensniffer_data
+from table import draw_table
 
 
 TMP_LOCAL_DIR = "tmp"
@@ -23,6 +26,18 @@ headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/
 cookie_string = '__cfduid=da97b059db0292806e2affdf9c3f4fd8b1593022325; _csrf=i8W6njc7hUXMOf4iQjiAxKg1; language=en; theme=darkTheme; pro_version=false; csgo_ses=1489162147d69debd9fe5d0ea2e445c87a117578d774502172d7151b89b82f7f; steamid=76561199068891508; avatar=https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_medium.jpg; username=andrewcrook232; thirdparty_token=06d04856ce6e334aa1368696df775e7ba0b1b898db135b0af0b5dc0fe001dd55; user_type=old; sellerid=6721648; type_device=desktop'
 
 rec_data = {}
+
+
+def print_statistics(total_length, processed_items):
+    if total_length == 0:
+        return
+    total = math.floor((processed_items / total_length) * 100)
+    sys.stdout.write('\r')
+    # the exact output you're looking for:
+    sys.stdout.write(
+        "[%-100s] %d%% total: %d  processed: %d  "
+        % ('=' * int(total + 1), total, total_length, processed_items))
+    sys.stdout.flush()
 
 
 def init(dir_name=TMP_LOCAL_DIR):
@@ -157,7 +172,7 @@ if __name__ == '__main__':
     mode = None
     mode = "sync"
     data = None
-    run_forse = True
+    run_forse = False
 
     if mode == "async":
         asyncio.run(run_async())
@@ -176,17 +191,24 @@ if __name__ == '__main__':
     if len(data) == 0 and not run_forse:
         print("No new coins received. All received coins have already been verified. Script completing")
         exit(0)
+    #print(json.dumps(data))
 
 
     print("Start filtering")
     data = json_filter(data)
-
+    #print(json.dumps(data[0]))
 
     ### dextools
+    print("Start dextool checker")
+    counter = 0
     for item in data:
         time.sleep(1)
+        print_statistics(len(data), counter)
         result = get_dextools_data(item["pairAddress"])#, mode="file")
         item["dextools"] = result
+        counter += 1
+    print_statistics(len(data), counter)
+    print("\n")
 
     data = [i for i in data if "top10_bauer" in i["dextools"]]
     with open('tmp/dexscreener_and_dextools_data.json', 'w') as f:
@@ -196,10 +218,15 @@ if __name__ == '__main__':
 
     ### honypot
     print("Start  honypot checker, length = {0}".format(len(data)))
+    counter = 0
     for item in data:
+        print_statistics(len(data), counter)
         time.sleep(1)
         result = isHoneyPot(item["pairAddress"])
         item["isHoneyPot"] = result
+        counter += 1
+    print_statistics(len(data), counter)
+    print("\n")
 
     data = [i for i in data if not i["isHoneyPot"]]
 
@@ -209,16 +236,29 @@ if __name__ == '__main__':
 
     ### tokensniffer
     print("Start tokensniffer, length = {0}".format(len(data)))
+    counter = 0
     for item in data:
+        print_statistics(len(data), counter)
         time.sleep(1)
         result = get_tokensniffer_data(item["baseToken"]["address"])
-        print(result)
+        #print(result)
         item["tokensniffer"] = result
+        counter += 1
+    print_statistics(len(data), counter)
+    print("\n")
 
-    data = [i for i in data if "is_flagged" in i["tokensniffer"]]
+    data = [i for i in data if "is_flagged" in i["tokensniffer"] and i["tokensniffer"]["is_sellable"]]
 
     print("Result data length = {0}".format(len(data)))
-    print(json.dumps(data))
+    #if len(data) != 0:
+    #    print(json.dumps(data[0]))
+    data = transform_result_data(data)
+    with open('result.json', 'w') as f:
+        json.dump(data, f)
+
+    draw_table(data)
+
+    #print(json.dumps(data))
 
 
 
