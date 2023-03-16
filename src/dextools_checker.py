@@ -17,6 +17,7 @@ def get_json_from_dextools(pair_address):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'
     }
     x = requests.get(uri, headers=headers)
+    #print(x.text)
     result = json.loads(x.text)['result']
     #print(json.dumps(result))
     return result
@@ -41,8 +42,8 @@ def get_count_with_less_005(data):
     return count
 
 
-def get_links_count(pair_address):
-    uri = "https://www.dextools.io/shared/data/pair?address={0}&chain=ether&audit=false".format(pair_address)
+def get_audit_data(pair_address):
+    uri = "https://www.dextools.io/shared/data/pair?address={0}&chain=ether&audit=true".format(pair_address)
     headers = {
         'cookie': '_pk_id.4.b299=8b297bde9046c6c3.1678695768.;_pk_ref.4.b299=["","",1678776376,"https://www.google.com/"];_pk_ses.4.b299=1;__cf_bm=8h6lzEfoMDjEHC05qtU3j.I3QwF3ptJqVuLTd5y9wUQ-1678778151-0-ATA7nQcdrmalQiJcKIxIPl2C6/2OWzWmo9gRfaycDz+NWZlkhseY/fO69tRKhgGg89kkpFMjuBfx0RSVCQf+4vS2qx8Pl9u3f5nxPoXkQ1xJOSa4Mkk6J5KYvbzwiehDIA==',
         'origin': 'https://www.dextools.io/',
@@ -52,18 +53,36 @@ def get_links_count(pair_address):
     }
     x = requests.get(uri, headers=headers)
     result = json.loads(x.text)
+    with open('tmp/dextools_audit_data.json', 'w') as f:
+        json.dump(result, f)
     if "data" in result.keys():
         result = result['data']
     else:
         #print("Empty json with social links: {0}".format(uri))
-        return [0, []]
+        return {"count": 0, "social": []}
     if not result or len(result) == 0 or not result[0]["token"] or not result[0]["token"]["links"]:
         print("Incorrect json with social links")
-        return [0, []]
+        return {"count": 0, "social": []}
     links = result[0]["token"]["links"]
     #print(json.dumps(links))
+
     count = len({k: v for k, v in links.items() if v != ""}.keys())
-    return [count, [v for k, v in links.items() if v != ""]]
+
+    is_honeypot = True
+    is_blacklisted = True
+    anti_whale_modifiable = True
+    if "is_honeypot" in result[0]["token"]["audit"]["external"]["goplus"]:
+        is_honeypot = False if result[0]["token"]["audit"]["external"]["goplus"]["is_honeypot"] == "0" else True
+        is_blacklisted = False if result[0]["token"]["audit"]["external"]["goplus"]["is_blacklisted"] == "0" else True
+        anti_whale_modifiable = False if result[0]["token"]["audit"]["external"]["goplus"]["anti_whale_modifiable"] == "0" else True
+
+    return {
+        "count": count,
+        "social": [v for k, v in links.items() if v != ""],
+        "is_honeypot": is_honeypot,
+        "is_blacklisted": is_blacklisted,
+        "anti_whale_modifiable": anti_whale_modifiable,
+        }
 
 def parse_data_from_file(path=None):
     with open(path, 'r') as json_file:
@@ -92,24 +111,31 @@ def get_dextools_data(pair_address, mode="web"):
     count_less_005 = get_count_with_less_005(data)
     #print("count_less_05 = {0}".format(count_less_05))
 
-    links = get_links_count(pair_address)
-    #print("links_count = {0}".format(links_count))
+    audit = get_audit_data(pair_address)
+    #print("audit = {0}".format(audit))
 
     return {
         "top10_bauer": top10_bauer,
         "top10_seller": top10_seller,
         "count_less_005": count_less_005,
         "total_count": len(data),
-        "links_count": links[0],
-        "links": links[1],
+        "links_count": audit["count"],
+        "links": audit["social"],
+        "is_honeypot": audit["is_honeypot"] if "is_honeypot" in audit else None,
+        "is_blacklisted": audit["is_blacklisted"] if "is_blacklisted" in audit else None,
+        "anti_whale_modifiable": audit["anti_whale_modifiable"] if "anti_whale_modifiable" in audit else None,
     }
 
 
 if __name__ == '__main__':
-    mode = "file"
-    data = {}
+    mode = "web"
 
-    data = get_dextools_data("0x194aa72806d46b83311773d5415e05199ebb6b0c", mode)
-    #data = get_dextools_data("0x4b729d5d871057f3a9c424792729217cde72410d")
+    #data = get_dextools_data("0xD3a9a2EBD567030bB1f1c3fB21a4a203d51c246b", mode)    # not work
+    data = get_dextools_data("0xd3a9a2ebd567030bb1f1c3fb21a4a203d51c246b", mode)    # work
+    #data = get_dextools_data("0xf3033c15162e9565ba39098d42cefd95b1dbd601")
+    print(json.dumps(data))
 
-
+## remove if "is_honeypot": "1",
+## remove if "is_blacklisted": "1",
+## remove if "anti_whale_modifiable": "1",
+##

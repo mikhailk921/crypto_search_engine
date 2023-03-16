@@ -211,6 +211,11 @@ if __name__ == '__main__':
     print("\n")
 
     data = [i for i in data if "top10_bauer" in i["dextools"]]
+
+    print("Len before dextools filter {0}".format(len(data)))
+    data = [i for i in data if not i["dextools"]["is_honeypot"] and not i["dextools"]["is_blacklisted"] and not i["dextools"]["anti_whale_modifiable"]]
+    print("Len after dextools filter {0}".format(len(data)))
+
     with open('tmp/dexscreener_and_dextools_data.json', 'w') as f:
         json.dump(data, f)
     #print(json.dumps(data[0]))
@@ -241,7 +246,6 @@ if __name__ == '__main__':
         print_statistics(len(data), counter)
         time.sleep(1)
         result = get_tokensniffer_data(item["baseToken"]["address"])
-        #print(result)
         item["tokensniffer"] = result
         counter += 1
     print_statistics(len(data), counter)

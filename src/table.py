@@ -24,14 +24,14 @@ def draw_table(data):
 
     for i in data:
         data_list.append([
-            i["Name"], i["Address"], i["Liquidity"], i["Total/Less"], i["Social"],
+            i["Name"], i["Liquidity"], i["Total/Less"], i["Social"],
             i["Honeypot"], i["TSflag"], i["TSsellable"], i["Buy fee"], i["Sell fee"],
-            i["Risk Level"], i["Score"], i["CreatedAt"], i["TSLink"],
+            i["Risk Level"], i["Score"], i["CreatedAt"], i["Address"], i["TSLink"],
         ])
 
     columns = [
-        "Name", "Address", "Liquidity", "Total/Less", "Social", "Honeypot", "TSflag", "TSsellable", "Buy fee",
-        "Sell fee", "Risk Level", "Score", "CreatedAt", "TSLink"
+        "Name", "Liquidity", "Total/Less", "Social", "Honeypot", "TSflag", "TSsellable", "Buy fee",
+        "Sell fee", "Risk Level", "Score", "CreatedAt", "Address", "TSLink"
      ]
 
     print(tabulate(data_list, headers=columns, showindex="always"))

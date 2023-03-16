@@ -34,9 +34,11 @@ def json_filter(data):
     print("Final data length = {0}".format(len(data)))
     result = []
     for item in data:
+        item["baseToken"]["address"] = item["baseToken"]["address"].lower()
+        item["quoteToken"]["address"] = item["quoteToken"]["address"].lower()
         result.append({
             "chainId": item["chainId"],
-            "pairAddress": item["pairAddress"],
+            "pairAddress": item["pairAddress"].lower(),
             "baseToken": item["baseToken"],
             "quoteToken": item["quoteToken"],
             "price": item["price"],
@@ -61,6 +63,9 @@ def transform_result_data(data):
             "Liquidity": i["liquidity"]["usd"],
             "Total/Less": "{0} / {1}".format(i["dextools"]["total_count"], i["dextools"]["count_less_005"]),
             "Social": ", ".join(i["dextools"]["links"]),
+            "is_honeypot": i["dextools"]["is_honeypot"],
+            "is_blacklisted": i["dextools"]["is_blacklisted"],
+            "anti_whale_modifiable": i["dextools"]["anti_whale_modifiable"],
             "Honeypot": i["isHoneyPot"],
             "TSflag": i["tokensniffer"]["is_flagged"],
             "TSsellable": i["tokensniffer"]["is_sellable"],
