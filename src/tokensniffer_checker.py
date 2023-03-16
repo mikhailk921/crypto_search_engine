@@ -26,6 +26,8 @@ def get_tokensniffer_data(baseTokenAddress):
             sleep(1)
             continue
         result = json.loads(text)
+        #print(json.dumps(result))
+
         if "status" in result.keys() and result["status"] == "pending":
             #print("tokensniffer: status pending, restart...")
             sleep(1)
@@ -49,6 +51,9 @@ def get_tokensniffer_data(baseTokenAddress):
         # initial liquidity ...
         "score": result["score"],
         "owner_balance": result["balances"]["owner_balance"],
+        "adequate_liquidity": result["pools"][0]["base_reserve"],
+        "has_pausable": result["contract"]["has_pausable"],
+        "has_mint": result["contract"]["has_mint"],
     }
 
 
@@ -56,10 +61,10 @@ if __name__ == '__main__':
     mode = "file"
     data = {}
 
-    data = get_tokensniffer_data("0x8EA12d23F469543A61C4F6f7fFdfdbAa7635609d")
+    data = get_tokensniffer_data("0x6d8c72c95bf020dec66215c3be2f828476590abe")
     #data = get_tokensniffer_data("0xBAa79dC2BD6a7c387C1Fbdceab6E1031B74fAA6B")
     #data = get_tokensniffer_data("0xbaa79dc2bd6a7c387c1fbdceab6e1031b74faa6b")
 
-    print(data)
+    print(json.dumps(data))
 
 

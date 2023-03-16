@@ -251,7 +251,10 @@ if __name__ == '__main__':
     print_statistics(len(data), counter)
     print("\n")
 
-    data = [i for i in data if "is_flagged" in i["tokensniffer"]]
+    data = [i for i in data if "is_flagged" in i["tokensniffer"]
+            and i["tokensniffer"]["adequate_liquidity"] > 5
+            and not i["tokensniffer"]["has_pausable"]
+            and not i["tokensniffer"]["has_mint"]]
 
     print("Result data length = {0}".format(len(data)))
     #if len(data) != 0:

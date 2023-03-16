@@ -130,8 +130,8 @@ def get_dextools_data(pair_address, mode="web"):
 if __name__ == '__main__':
     mode = "web"
 
-    #data = get_dextools_data("0xD3a9a2EBD567030bB1f1c3fB21a4a203d51c246b", mode)    # not work
-    data = get_dextools_data("0xd3a9a2ebd567030bb1f1c3fb21a4a203d51c246b", mode)    # work
+    data = get_dextools_data("0xbaea270bbfed2f34a045b5bc6b65626f653f2999", mode)
+    #data = get_dextools_data("0xd3a9a2ebd567030bb1f1c3fb21a4a203d51c246b", mode)    # work
     #data = get_dextools_data("0xf3033c15162e9565ba39098d42cefd95b1dbd601")
     print(json.dumps(data))
 
