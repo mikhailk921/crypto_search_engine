@@ -17,7 +17,7 @@ def get_tokensniffer_data(baseTokenAddress):
         counter += 1
         response = requests.get(url, headers=headers)
         text = response.text
-        print(text)
+        #print(text)
 
         if text == "Contract not found":
             print("\ntokensniffer: Contract {0} not found...".format(baseTokenAddress))

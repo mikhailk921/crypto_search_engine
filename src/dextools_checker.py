@@ -89,7 +89,7 @@ def get_dextools_data(pair_address, mode="web"):
     top10_seller = sort_by_top10_seller(data)
     #print(json.dumps(top10_seller))
 
-    count_less_05 = get_count_with_less_005(data)
+    count_less_005 = get_count_with_less_005(data)
     #print("count_less_05 = {0}".format(count_less_05))
 
     links = get_links_count(pair_address)
@@ -98,7 +98,7 @@ def get_dextools_data(pair_address, mode="web"):
     return {
         "top10_bauer": top10_bauer,
         "top10_seller": top10_seller,
-        "count_less_05": count_less_05,
+        "count_less_005": count_less_005,
         "total_count": len(data),
         "links_count": links[0],
         "links": links[1],

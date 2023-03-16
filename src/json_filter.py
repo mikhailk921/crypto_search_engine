@@ -59,7 +59,7 @@ def transform_result_data(data):
             "Name": i["baseToken"]["name"],
             "Address": i["baseToken"]["address"],
             "Liquidity": i["liquidity"]["usd"],
-            "Total/Less": "{0} / {1}".format(i["dextools"]["total_count"], i["dextools"]["count_less_05"]),
+            "Total/Less": "{0} / {1}".format(i["dextools"]["total_count"], i["dextools"]["count_less_005"]),
             "Social": ", ".join(i["dextools"]["links"]),
             "Honeypot": i["isHoneyPot"],
             "TSflag": i["tokensniffer"]["is_flagged"],
