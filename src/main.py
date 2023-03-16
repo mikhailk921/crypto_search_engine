@@ -172,7 +172,7 @@ if __name__ == '__main__':
     mode = None
     mode = "sync"
     data = None
-    run_forse = False
+    run_forse = True
 
     if mode == "async":
         asyncio.run(run_async())
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     for item in data:
         print_statistics(len(data), counter)
         time.sleep(1)
-        result = isHoneyPot(item["pairAddress"])
+        result = isHoneyPot(item["baseToken"]["address"])#item["pairAddress"])
         item["isHoneyPot"] = result
         counter += 1
     print_statistics(len(data), counter)
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     print_statistics(len(data), counter)
     print("\n")
 
-    data = [i for i in data if "is_flagged" in i["tokensniffer"] and i["tokensniffer"]["is_sellable"]]
+    data = [i for i in data if "is_flagged" in i["tokensniffer"]]
 
     print("Result data length = {0}".format(len(data)))
     #if len(data) != 0:

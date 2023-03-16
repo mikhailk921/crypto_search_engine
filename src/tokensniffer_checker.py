@@ -17,7 +17,7 @@ def get_tokensniffer_data(baseTokenAddress):
         counter += 1
         response = requests.get(url, headers=headers)
         text = response.text
-        #print(text)
+        print(text)
 
         if text == "Contract not found":
             print("\ntokensniffer: Contract {0} not found...".format(baseTokenAddress))
@@ -36,12 +36,12 @@ def get_tokensniffer_data(baseTokenAddress):
         return {}
 
     return {
-        "is_flagged": False if result["is_flagged"] == "false" else True,
-        "is_sellable": False if result["swap_simulation"]["is_sellable"] == "false" else True, # need true
+        "is_flagged": result["is_flagged"],
+        "is_sellable": result["swap_simulation"]["is_sellable"], # need true
         "buy_fee": result["swap_simulation"]["buy_fee"],
         "sell_fee": result["swap_simulation"]["sell_fee"],
-        "is_source_verified": False if result["contract"]["is_source_verified"] == "false" else True,
-        "is_ownership_renounced": False if result["permissions"]["is_ownership_renounced"] == "false" else True,
+        "is_source_verified": result["contract"]["is_source_verified"],
+        "is_ownership_renounced": result["permissions"]["is_ownership_renounced"],
         "lock_balance": result["balances"]["lock_balance"],
         "deployer_balance": result["balances"]["deployer_balance"] / 10e12,
         #
@@ -56,9 +56,9 @@ if __name__ == '__main__':
     mode = "file"
     data = {}
 
-    #data = get_tokensniffer_data("0x64aBE0fA0F44f688D26321b611686aa289780411")
+    data = get_tokensniffer_data("0x8EA12d23F469543A61C4F6f7fFdfdbAa7635609d")
     #data = get_tokensniffer_data("0xBAa79dC2BD6a7c387C1Fbdceab6E1031B74fAA6B")
-    data = get_tokensniffer_data("0xbaa79dc2bd6a7c387c1fbdceab6e1031b74faa6b")
+    #data = get_tokensniffer_data("0xbaa79dc2bd6a7c387c1fbdceab6e1031b74faa6b")
 
     print(data)
 
