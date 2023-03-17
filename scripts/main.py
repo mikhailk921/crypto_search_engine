@@ -304,14 +304,15 @@ def run_pipline(data, mode, run_forse=False):
     draw_table(data)
 
     def trigger_notification(data):
-        template = "----------NEW COIN-----------\n\nName: {0}\nAddress: {1}\nLiquidity: {2}\nisHoneypot: {3}\nisBlacklisted: {4}\nisFlagged: {5}\nisSellable: {6}\nTax: {7} / {8}\nisRisk: {9}\nBorn:{10}\nSocials: {11}\n\n{12}\n\n______________________".format(data["Name"],data["Address"],data["Liquidity"],data["is_honeypot"],data["is_blacklisted"],data["TSflag"],data["TSsellable"],data["Buy fee"],data["Sell fee"],data["Risk Level"],data["CreatedAt"],data["Social"],data["TSLink"])
-        apiToken = BOT_KEY
-        chatID = '-1001933070742'
-        apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
-        try:
-            requests.post(apiURL, json={'chat_id': chatID, 'text': template})
-        except Exception as e:
-            print(e)
+        for item in data:
+            template = "----------NEW COIN-----------\n\nName: {0}\nAddress: {1}\nLiquidity: {2}\nisHoneypot: {3}\nisBlacklisted: {4}\nisFlagged: {5}\nisSellable: {6}\nTax: {7} / {8}\nisRisk: {9}\nBorn:{10}\nSocials: {11}\n\n{12}\n\n______________________".format(item["Name"],item["Address"],item["Liquidity"],item["is_honeypot"],item["is_blacklisted"],item["TSflag"],item["TSsellable"],item["Buy fee"],item["Sell fee"],item["Risk Level"],item["CreatedAt"],item["Social"],item["TSLink"])
+            apiToken = BOT_KEY
+            chatID = '-1001933070742'
+            apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
+            try:
+                requests.post(apiURL, json={'chat_id': chatID, 'text': template})
+            except Exception as e:
+                print(e)
         
     if len(data) != 0:
         trigger_notification(data)
@@ -336,7 +337,6 @@ if __name__ == '__main__':
     chainId = "ethereum"
     mode = None
     mode = "async"
-    new_thread = None
     data = None
     run_forse = False
 

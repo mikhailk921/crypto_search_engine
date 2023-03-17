@@ -56,6 +56,17 @@ def json_filter(data):
     return result
 
 
+def convert_data_types_to_str(value):
+    if value is None:
+        return "null"
+    elif value is True:
+        return "true"
+    elif value is False:
+        return "false"
+    else:
+        return value
+
+
 def transform_result_data(data):
     result = []
     for i in data:
@@ -65,12 +76,12 @@ def transform_result_data(data):
             "Liquidity": i["liquidity"]["usd"],
             "Total/Less": "{0} / {1}".format(i["dextools"]["total_count"], i["dextools"]["count_less_005"]),
             "Social": ", ".join(i["dextools"]["links"]),
-            "is_honeypot": i["dextools"]["is_honeypot"],
-            "is_blacklisted": i["dextools"]["is_blacklisted"],
-            "anti_whale_modifiable": i["dextools"]["anti_whale_modifiable"],
-            "Honeypot": i["isHoneyPot"],
-            "TSflag": i["tokensniffer"]["is_flagged"],
-            "TSsellable": i["tokensniffer"]["is_sellable"],
+            "is_honeypot": convert_data_types_to_str(i["dextools"]["is_honeypot"]),
+            "is_blacklisted": convert_data_types_to_str(i["dextools"]["is_blacklisted"]),
+            "anti_whale_modifiable": convert_data_types_to_str(i["dextools"]["anti_whale_modifiable"]),
+            "Honeypot": convert_data_types_to_str(i["isHoneyPot"]),
+            "TSflag": convert_data_types_to_str(i["tokensniffer"]["is_flagged"]),
+            "TSsellable": convert_data_types_to_str(i["tokensniffer"]["is_sellable"]),
             "Buy fee": i["tokensniffer"]["buy_fee"],
             "Sell fee": i["tokensniffer"]["sell_fee"],
             "Risk Level": i["tokensniffer"]["riskLevel"],
