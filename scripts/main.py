@@ -14,6 +14,8 @@ import os
 import json
 import time
 import traceback
+import telebot
+import requests
 
 from src.json_filter import json_filter, transform_result_data
 from src.dextools_checker import get_dextools_data
@@ -21,7 +23,10 @@ from src.honeypot_checker import isHoneyPot
 from src.tokensniffer_checker import get_tokensniffer_data
 from src.table import draw_table
 
-# BOT_API_KEY = 6022347804:AAFVpXBH3Pc-PCO3luaBECH8meD3F-FNdOQ
+
+# tg bot api
+BOT_KEY = "6022347804:AAFVpXBH3Pc-PCO3luaBECH8meD3F-FNdOQ"
+
 TMP_LOCAL_DIR = "tmp"
 
 header_data = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.173', 'origin': 'https://cs.money'}
@@ -87,7 +92,7 @@ def on_message(ws, message):
         if exit_flag:
             print("Ending web socket thread")
             ws.close()
-    except():
+    except:
         print(traceback.format_exc())
 
 
@@ -144,7 +149,7 @@ def run_web_socket_sync():
                 rec_data = json_object["pairs"]
                 print("Saved")
                 break
-        except():
+        except:
             print(traceback.format_exc())
 
     print("Closing socket...")
@@ -299,7 +304,15 @@ def run_pipline(data, mode, run_forse=False):
     draw_table(data)
 
     def trigger_notification(data):
-        pass
+        template = "----------NEW COIN-----------\n\nName: {0}\nAddress: {1}\nLiquidity: {2}\nisHoneypot: {3}\nisBlacklisted: {4}\nisFlagged: {5}\nisSellable: {6}\nTax: {7} / {8}\nisRisk: {9}\nBorn:{10}\nSocials: {11}\n\n{12}\n\n______________________".format(data["Name"],data["Address"],data["Liquidity"],data["is_honeypot"],data["is_blacklisted"],data["TSflag"],data["TSsellable"],data["Buy fee"],data["Sell fee"],data["Risk Level"],data["CreatedAt"],data["Social"],data["TSLink"])
+        apiToken = BOT_KEY
+        chatID = '-1001933070742'
+        apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
+        try:
+            requests.post(apiURL, json={'chat_id': chatID, 'text': template})
+        except Exception as e:
+            print(e)
+        
     if len(data) != 0:
         trigger_notification(data)
 
