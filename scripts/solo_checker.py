@@ -4,13 +4,14 @@
 
 
 import sys
+import telebot
 
 from src.dextools_checker import get_dextools_data
 from src.honeypot_checker import isHoneyPot
 from src.tokensniffer_checker import get_tokensniffer_data
 
-# BOT_API_KEY = 5986303026:AAEvJ3Z8PV_1VofFY94Ktq6-0_X38vg5Hbg
-
+BOT_KEY = "5986303026:AAEvJ3Z8PV_1VofFY94Ktq6-0_X38vg5Hbg"
+bot = telebot.TeleBot(BOT_KEY, parse_mode=None)
 
 def run_pipline(pair_address):
     result = {"pair_address": pair_address}
@@ -56,8 +57,19 @@ def run_pipline(pair_address):
     return True
 
 
-if __name__ == "__main__":
-    #pair_address = int(sys.argv[1])
-    pair_address = "0xbaea270bbfed2f34a045b5bc6b65626f653f2999"
+# Running a check for single coin
+@bot.message_handler(commands=['check'])
+def handle_message_for_check(message):
+    message_text = message.text.split()
+    if len(message_text) != 2:
+        bot.reply_to(message, f'You should use check with address in one line: For example: "/check 0x0000000001"')
+        return 
+    pair_address = message_text[1]
+    bot.reply_to(message, f'Checking....')
+    results = run_pipline(pair_address)
+    return bot.reply_to(message, f'{0}'.format("True" if results else "False"))
 
-    result = run_pipline(pair_address)
+# if __name__ == "__main__":
+#     #pair_address = int(sys.argv[1])
+#     # pair_address = "0xbaea270bbfed2f34a045b5bc6b65626f653f2999"
+#     # result = run_pipline(pair_address)
