@@ -13,13 +13,15 @@ def filter_by_liquidity(data):
 
 
 def filter_by_sale(data):
-    return [i for i in data if i["txns"]["h24"]["sells"] > 0]
+    return data
+    #return [i for i in data if i["txns"]["h24"]["sells"] > 0]
 
 
 def compare_dynamic_data(data):
-    return [i for i in data if i["priceChange"]["h24"] != 0
-            and i["priceChange"]["h6"] != 0
-            and i["priceChange"]["h1"] != 0]
+    return data
+    # return [i for i in data if i["priceChange"]["h24"] != 0
+    #         and i["priceChange"]["h6"] != 0
+    #         and i["priceChange"]["h1"] != 0]
     # and i["priceChange"]["m5"] != 0]
 
 

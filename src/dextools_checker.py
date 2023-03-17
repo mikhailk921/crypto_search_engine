@@ -53,8 +53,8 @@ def get_audit_data(pair_address):
     }
     x = requests.get(uri, headers=headers)
     result = json.loads(x.text)
-    with open('tmp/dextools_audit_data.json', 'w') as f:
-        json.dump(result, f)
+    # with open('tmp/dextools_audit_data.json', 'w') as f:
+    #     json.dump(result, f)
     if "data" in result.keys():
         result = result['data']
     else:
@@ -79,6 +79,8 @@ def get_audit_data(pair_address):
     return {
         "count": count,
         "social": [v for k, v in links.items() if v != ""],
+        "pair_address": pair_address,
+        "token_address": result[0]["id"]["token"],
         "is_honeypot": is_honeypot,
         "is_blacklisted": is_blacklisted,
         "anti_whale_modifiable": anti_whale_modifiable,
@@ -97,8 +99,8 @@ def get_dextools_data(pair_address, mode="web"):
         data = get_json_from_dextools(pair_address)
         if len(data) == 0:
             return {}
-        with open('tmp/dextools_data.json', 'w') as f:
-            json.dump(data, f)
+        #with open('tmp/dextools_data.json', 'w') as f:
+        #    json.dump(data, f)
     else:
         data = parse_data_from_file("tmp/dextools_data.json")
 
@@ -124,6 +126,8 @@ def get_dextools_data(pair_address, mode="web"):
         "is_honeypot": audit["is_honeypot"] if "is_honeypot" in audit else None,
         "is_blacklisted": audit["is_blacklisted"] if "is_blacklisted" in audit else None,
         "anti_whale_modifiable": audit["anti_whale_modifiable"] if "anti_whale_modifiable" in audit else None,
+        "pair_address": audit["pair_address"],
+        "token_address": audit["token_address"],
     }
 
 
