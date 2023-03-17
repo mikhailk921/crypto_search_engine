@@ -7,6 +7,7 @@ import json
 
 
 def get_json_from_dextools(pair_address):
+    pair_address = pair_address.lower()
     uri = "https://www.dextools.io/chain-ethereum/api/Pancakeswap/1/pairexplorer?v=2.47.1&pair={0}&ts=1671461472-0&h=1".format(pair_address)
 
     headers = {
@@ -43,6 +44,7 @@ def get_count_with_less_005(data):
 
 
 def get_audit_data(pair_address):
+    pair_address = pair_address.lower()
     uri = "https://www.dextools.io/shared/data/pair?address={0}&chain=ether&audit=true".format(pair_address)
     headers = {
         'cookie': '_pk_id.4.b299=8b297bde9046c6c3.1678695768.;_pk_ref.4.b299=["","",1678776376,"https://www.google.com/"];_pk_ses.4.b299=1;__cf_bm=8h6lzEfoMDjEHC05qtU3j.I3QwF3ptJqVuLTd5y9wUQ-1678778151-0-ATA7nQcdrmalQiJcKIxIPl2C6/2OWzWmo9gRfaycDz+NWZlkhseY/fO69tRKhgGg89kkpFMjuBfx0RSVCQf+4vS2qx8Pl9u3f5nxPoXkQ1xJOSa4Mkk6J5KYvbzwiehDIA==',
@@ -138,15 +140,15 @@ def get_dextools_data(pair_address, mode="web"):
         "is_honeypot": audit["is_honeypot"] if "is_honeypot" in audit else None,
         "is_blacklisted": audit["is_blacklisted"] if "is_blacklisted" in audit else None,
         "anti_whale_modifiable": audit["anti_whale_modifiable"] if "anti_whale_modifiable" in audit else None,
-        "pair_address": audit["pair_address"],
-        "token_address": audit["token_address"],
+        "pair_address": pair_address,
+        "token_address": audit["token_address"] if "token_address" in audit else None,
     }
 
 
 if __name__ == '__main__':
     mode = "web"
 
-    data = get_dextools_data("0xd8adCC692ed752c8B7c5337d7eB8Fe0A13b2996c", mode)
+    data = get_dextools_data("0x514910771AF9Ca656af840dff83E8264EcF986CA", mode)
     #data = get_dextools_data("0xd3a9a2ebd567030bb1f1c3fb21a4a203d51c246b", mode)    # work
     #data = get_dextools_data("0xf3033c15162e9565ba39098d42cefd95b1dbd601")
     print(json.dumps(data))
