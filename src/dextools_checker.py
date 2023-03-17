@@ -71,7 +71,7 @@ def get_audit_data(pair_address):
     is_honeypot = True
     is_blacklisted = True
     anti_whale_modifiable = True
-    if "is_honeypot" in result[0]["token"]["audit"]["external"]["goplus"]:
+    if "external" in result[0]["token"]["audit"] and "is_honeypot" in result[0]["token"]["audit"]["external"]["goplus"]:
         is_honeypot = False if result[0]["token"]["audit"]["external"]["goplus"]["is_honeypot"] == "0" else True
         is_blacklisted = False if result[0]["token"]["audit"]["external"]["goplus"]["is_blacklisted"] == "0" else True
         anti_whale_modifiable = False if result[0]["token"]["audit"]["external"]["goplus"]["anti_whale_modifiable"] == "0" else True
@@ -98,7 +98,19 @@ def get_dextools_data(pair_address, mode="web"):
     if mode == "web":
         data = get_json_from_dextools(pair_address)
         if len(data) == 0:
-            return {}
+            return {
+                "top10_bauer": [],
+                "top10_seller": [],
+                "count_less_005": 0,
+                "total_count": len(data),
+                "links_count": 0,
+                "links": [],
+                "is_honeypot": None,
+                "is_blacklisted": None,
+                "anti_whale_modifiable": None,
+                "pair_address": pair_address,
+                "token_address": None,
+            }
         #with open('tmp/dextools_data.json', 'w') as f:
         #    json.dump(data, f)
     else:
@@ -134,7 +146,7 @@ def get_dextools_data(pair_address, mode="web"):
 if __name__ == '__main__':
     mode = "web"
 
-    data = get_dextools_data("0xbaea270bbfed2f34a045b5bc6b65626f653f2999", mode)
+    data = get_dextools_data("0xd8adCC692ed752c8B7c5337d7eB8Fe0A13b2996c", mode)
     #data = get_dextools_data("0xd3a9a2ebd567030bb1f1c3fb21a4a203d51c246b", mode)    # work
     #data = get_dextools_data("0xf3033c15162e9565ba39098d42cefd95b1dbd601")
     print(json.dumps(data))

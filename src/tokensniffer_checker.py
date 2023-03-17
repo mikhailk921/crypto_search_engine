@@ -21,7 +21,24 @@ def get_tokensniffer_data(baseTokenAddress):
 
         if text == "Contract not found":
             print("\ntokensniffer: Contract {0} not found...".format(baseTokenAddress))
-            return {}
+            return {
+                "is_flagged": False,
+                "is_sellable": False,  # need true
+                "buy_fee": 0,
+                "sell_fee": 0,
+                "is_source_verified": False,
+                "is_ownership_renounced": False,
+                "lock_balance": 0,
+                "deployer_balance": 0,
+                #
+                "riskLevel": "",
+                # initial liquidity ...
+                "score": 0,
+                "owner_balance": 0,
+                "adequate_liquidity": 0,
+                "has_pausable": True,
+                "has_mint": True,
+            }
         if "html" in text:
             sleep(1)
             continue
@@ -35,7 +52,24 @@ def get_tokensniffer_data(baseTokenAddress):
         break
 
     if result is None:
-        return {}
+        return {
+            "is_flagged": False,
+            "is_sellable": False,  # need true
+            "buy_fee": 0,
+            "sell_fee": 0,
+            "is_source_verified": False,
+            "is_ownership_renounced": False,
+            "lock_balance": 0,
+            "deployer_balance": 0,
+            #
+            "riskLevel": "",
+            # initial liquidity ...
+            "score": 0,
+            "owner_balance": 0,
+            "adequate_liquidity": 0,
+            "has_pausable": True,
+            "has_mint": True,
+        }
 
     return {
         "is_flagged": result["is_flagged"],
@@ -52,8 +86,8 @@ def get_tokensniffer_data(baseTokenAddress):
         "score": result["score"],
         "owner_balance": result["balances"]["owner_balance"],
         "adequate_liquidity": result["pools"][0]["base_reserve"],
-        "has_pausable": result["contract"]["has_pausable"],
-        "has_mint": result["contract"]["has_mint"],
+        "has_pausable": result["contract"]["has_pausable"] if "has_pausable" in result["contract"] else False,
+        "has_mint": result["contract"]["has_mint"] if "has_mint" in result["contract"] else False,
     }
 
 
@@ -61,7 +95,7 @@ if __name__ == '__main__':
     mode = "file"
     data = {}
 
-    data = get_tokensniffer_data("0x6d8c72c95bf020dec66215c3be2f828476590abe")
+    data = get_tokensniffer_data("0x4d7529faa257f121909f1077532f0e9adca9f441")
     #data = get_tokensniffer_data("0xBAa79dC2BD6a7c387C1Fbdceab6E1031B74fAA6B")
     #data = get_tokensniffer_data("0xbaa79dc2bd6a7c387c1fbdceab6e1031b74faa6b")
 

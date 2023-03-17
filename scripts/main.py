@@ -4,6 +4,7 @@
 
 import asyncio
 import copy
+import datetime
 import math
 import sys
 from threading import Thread
@@ -213,15 +214,17 @@ def run_pipline(data, mode, run_forse=False):
         #exit(0)
     # print(json.dumps(data))
 
-    print("Start filtering")
+    if len(data) != 0:
+        print("Start filtering")
     if mode == "async":
         for item in data:
-            print("{0} :  {1}".format(item["baseToken"]["name"], item["pairAddress"]))
+            print("\n*********************")
+            print("{0} : {1} :  {2}".format(datetime.datetime.now(), item["baseToken"]["name"], item["pairAddress"]))
     data = json_filter(data)
     # print(json.dumps(data[0]))
-
     ### dextools
-    print("Start dextool checker")
+    if len(data) != 0:
+        print("Start dextool checker, length {0}".format(len(data)))
     counter = 0
     for item in data:
         time.sleep(1)
@@ -229,23 +232,28 @@ def run_pipline(data, mode, run_forse=False):
         result = get_dextools_data(item["pairAddress"])  # , mode="file")
         item["dextools"] = result
         counter += 1
-    print_statistics(len(data), counter)
-    print("\n")
+    if len(data) != 0:
+        print_statistics(len(data), counter)
+        print("\n")
 
-    data = [i for i in data if "top10_bauer" in i["dextools"]]
+    #data = [i for i in data if "top10_bauer" in i["dextools"]]
 
-    print("Len before dextools filter {0}".format(len(data)))
+    if mode == "async":
+        print("Len before dextools filter {0}".format(len(data)))
     data = [i for i in data if
             not i["dextools"]["is_honeypot"] and not i["dextools"]["is_blacklisted"] and not i["dextools"][
                 "anti_whale_modifiable"]]
-    print("Len after dextools filter {0}".format(len(data)))
+
+    if mode == "async":
+        print("Len after dextools filter {0}".format(len(data)))
 
     with open('tmp/dexscreener_and_dextools_data.json', 'w') as f:
         json.dump(data, f)
     # print(json.dumps(data[0]))
 
     ### honypot
-    print("Start  honypot checker, length = {0}".format(len(data)))
+    if len(data) != 0:
+        print("Start  honypot checker, length = {0}".format(len(data)))
     counter = 0
     for item in data:
         print_statistics(len(data), counter)
@@ -253,8 +261,9 @@ def run_pipline(data, mode, run_forse=False):
         result = isHoneyPot(item["baseToken"]["address"])  # item["pairAddress"])
         item["isHoneyPot"] = result
         counter += 1
-    print_statistics(len(data), counter)
-    print("\n")
+    if len(data) != 0:
+        print_statistics(len(data), counter)
+        print("\n")
 
     data = [i for i in data if not i["isHoneyPot"]]
 
@@ -262,7 +271,8 @@ def run_pipline(data, mode, run_forse=False):
         json.dump(data, f)
 
     ### tokensniffer
-    print("Start tokensniffer, length = {0}".format(len(data)))
+    if len(data) != 0:
+        print("Start tokensniffer, length = {0}".format(len(data)))
     counter = 0
     for item in data:
         print_statistics(len(data), counter)
@@ -270,8 +280,9 @@ def run_pipline(data, mode, run_forse=False):
         result = get_tokensniffer_data(item["baseToken"]["address"])
         item["tokensniffer"] = result
         counter += 1
-    print_statistics(len(data), counter)
-    print("\n")
+    if len(data) != 0:
+        print_statistics(len(data), counter)
+        print("\n")
 
     data = [i for i in data if "is_flagged" in i["tokensniffer"]
             and i["tokensniffer"]["adequate_liquidity"] > 5
