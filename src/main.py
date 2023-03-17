@@ -19,7 +19,7 @@ from honeypot_checker import isHoneyPot
 from tokensniffer_checker import get_tokensniffer_data
 from table import draw_table
 
-
+# BOT_API_KEY = 6022347804:AAFVpXBH3Pc-PCO3luaBECH8meD3F-FNdOQ
 TMP_LOCAL_DIR = "tmp"
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.173', 'origin': 'https://cs.money'}
@@ -66,7 +66,7 @@ async def run_web_socket_async():
     uri = "wss://io.dexscreener.com/dex/screener/pairs/h6/1?rankBy[key]=volume&rankBy[order]=desc&filters[pairAge][max]=24&filters[liquidity][min]=10000&filters[chainIds][0]=ethereum"
     print("url = {0}".format(uri))
 
-    ws = websocket.WebSocketApp(uri, on_message=on_message, header=headers, cookie=cookie_string)
+    ws = websocket.WebSocketApp(uri, on_message=on_message, headers=headers, cookie=cookie_string)
     print("Connected")
 
     ws.run_forever(ping_timeout=20)
@@ -97,7 +97,7 @@ def run_web_socket_sync():
     uri = "wss://io.dexscreener.com/dex/screener/pairs/h6/1?rankBy[key]=volume&rankBy[order]=desc&filters[pairAge][max]=24&filters[liquidity][min]=10000&filters[chainIds][0]=ethereum"
 
     ws = websocket.WebSocket()
-    ws.connect(uri, header=headers, cookie=cookie_string)
+    ws.connect(uri, headers=headers, cookie=cookie_string)
     print("Connected")
 
     while True:
