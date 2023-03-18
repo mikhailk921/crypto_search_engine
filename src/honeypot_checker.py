@@ -19,7 +19,7 @@ def isHoneyPot(pair_address):
 
     if 'IsHoneypot' not in json.dumps(json.loads(x.text)):
         print("Incorrect json: {0}".format(uri))
-    print(x.text)
+    #print(x.text)
 
     isHoneyPot = json.dumps(json.loads(x.text)['IsHoneypot']) == "true"
     #print("isHoneyPot = {0};  {1}".format(isHoneyPot, pair_address))

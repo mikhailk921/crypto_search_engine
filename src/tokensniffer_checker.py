@@ -52,6 +52,7 @@ def get_tokensniffer_data(baseTokenAddress):
         break
 
     if result is None:
+        print("\ntokensniffer result is None...".format(baseTokenAddress))
         return {
             "is_flagged": False,
             "is_sellable": False,  # need true

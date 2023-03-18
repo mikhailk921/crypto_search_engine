@@ -193,7 +193,6 @@ def add_more_known_id(data):
             if j["pairAddress"] == item["pairAddress"]:
                 break
         checked_ids_list.append({"pairAddress": item["pairAddress"], "isInterest": False})
-        print("checked_ids_list {0}".format(len(checked_ids_list)))
 
     print("Len after add knows ids {0}".format(len(checked_ids_list)))
 
@@ -234,7 +233,7 @@ def run_pipline(data, mode, run_forse=False):
     for item in data:
         time.sleep(1)
         print_statistics(len(data), counter)
-        result = get_dextools_data(item["pairAddress"])  # , mode="file")
+        result = get_dextools_data(item["pairAddress"])
         item["dextools"] = result
         counter += 1
     if len(data) != 0:
@@ -256,6 +255,10 @@ def run_pipline(data, mode, run_forse=False):
         json.dump(data, f)
     # print(json.dumps(data[0]))
 
+    if len(data) == 0:
+        print("dextools check not passed")
+        return
+
     ### honypot
     if len(data) != 0:
         print("Start  honypot checker, length = {0}".format(len(data)))
@@ -271,6 +274,9 @@ def run_pipline(data, mode, run_forse=False):
         print("\n")
 
     data = [i for i in data if not i["isHoneyPot"]]
+    if len(data) == 0:
+        print("honypot check not passed")
+        return
 
     with open('tmp/honeypot_data.json', 'w') as f:
         json.dump(data, f)
@@ -289,10 +295,15 @@ def run_pipline(data, mode, run_forse=False):
         print_statistics(len(data), counter)
         print("\n")
 
+
     data = [i for i in data if "is_flagged" in i["tokensniffer"]
             and i["tokensniffer"]["adequate_liquidity"] > 5
             and not i["tokensniffer"]["has_pausable"]
             and not i["tokensniffer"]["has_mint"]]
+
+    if len(data) == 0:
+        print("tokensniffer check not passed")
+        return
 
     print("Result data length = {0}".format(len(data)))
     # if len(data) != 0:
@@ -315,20 +326,24 @@ def run_pipline(data, mode, run_forse=False):
                 print(e)
         
     if len(data) != 0:
+        print("*** Start trigger notify")
         trigger_notification(data)
 
 
 def command_line_monitor():
     print("Start new command monitor thread")
     global exit_flag
-    while True:
-        line = input()
-        print("Input command: {0}".format(line))
-        if line == "q":
-            exit_flag = True
+    try:
+        while True:
+            line = input()
+            print("Input command: {0}".format(line))
+            if line == "q":
+                exit_flag = True
 
-            print("Ending command monitor thread")
-            return
+                print("Ending command monitor thread")
+                return
+    except Exception as ex:
+        print(traceback.format_exc())
 
 
 if __name__ == '__main__':
