@@ -333,20 +333,25 @@ def run_pipline(data, mode, run_forse=False):
 def command_line_monitor():
     print("Start new command monitor thread")
     global exit_flag
-    try:
-        while True:
-            line = input()
-            print("Input command: {0}".format(line))
-            if line == "q":
-                exit_flag = True
 
-                print("Ending command monitor thread")
-                return
-    except Exception as ex:
-        print(traceback.format_exc())
+    while True:
+        line = input()
+        print("Input command: {0}".format(line))
+        if line == "q":
+            exit_flag = True
+
+            print("Ending command monitor thread")
+            return
+
 
 
 if __name__ == '__main__':
+    argv = None
+    enable_command_monitor = True
+    if len(sys.argv) > 1:
+        argv = sys.argv[1]
+    if argv is not None:
+        enable_command_monitor = False
 
     init()
     chainId = "ethereum"
@@ -361,7 +366,9 @@ if __name__ == '__main__':
         command_line_monitor_thread = Thread(target=command_line_monitor)
 
         web_socket_thread.start()
-        command_line_monitor_thread.start()
+
+        if enable_command_monitor is True:
+            command_line_monitor_thread.start()
 
         while not exit_flag:
             if data_is_updated:
@@ -371,7 +378,8 @@ if __name__ == '__main__':
             time.sleep(1)
 
         web_socket_thread.join()
-        command_line_monitor_thread.join()
+        if enable_command_monitor is True:
+            command_line_monitor_thread.join()
 
     elif mode == "sync":
         data = run_sync()
