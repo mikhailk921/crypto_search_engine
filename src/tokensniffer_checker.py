@@ -13,6 +13,7 @@ def get_tokensniffer_data(baseTokenAddress):
 
     counter = 0
     result = None
+    response = None
     while counter < 10:
         counter += 1
         response = requests.get(url, headers=headers)
@@ -38,6 +39,7 @@ def get_tokensniffer_data(baseTokenAddress):
                 "adequate_liquidity": 0,
                 "has_pausable": True,
                 "has_mint": True,
+                "is_forbidden": False,
             }
         if "html" in text:
             sleep(1)
@@ -45,14 +47,14 @@ def get_tokensniffer_data(baseTokenAddress):
         result = json.loads(text)
         #print(json.dumps(result))
 
-        if "status" in result.keys() and result["status"] == "pending":
+        if "status" in result and result["status"] == "pending":
             #print("tokensniffer: status pending, restart...")
             sleep(1)
             continue
         break
 
     if result is None:
-        print("\ntokensniffer result is None...".format(baseTokenAddress))
+        print("\ntokensniffer result is None...  {0}".format(response.text))
         return {
             "is_flagged": False,
             "is_sellable": False,  # need true
@@ -70,6 +72,7 @@ def get_tokensniffer_data(baseTokenAddress):
             "adequate_liquidity": 0,
             "has_pausable": True,
             "has_mint": True,
+            "is_forbidden": True if "html" in response.text else False,
         }
 
     return {
@@ -89,6 +92,7 @@ def get_tokensniffer_data(baseTokenAddress):
         "adequate_liquidity": result["pools"][0]["base_reserve"],
         "has_pausable": result["contract"]["has_pausable"] if "has_pausable" in result["contract"] else False,
         "has_mint": result["contract"]["has_mint"] if "has_mint" in result["contract"] else False,
+        "is_forbidden": False,
     }
 
 

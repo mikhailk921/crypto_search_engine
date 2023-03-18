@@ -296,10 +296,10 @@ def run_pipline(data, mode, run_forse=False):
         print("\n")
 
 
-    data = [i for i in data if "is_flagged" in i["tokensniffer"]
+    data = [i for i in data if ("is_flagged" in i["tokensniffer"]
             and i["tokensniffer"]["adequate_liquidity"] > 5
             and not i["tokensniffer"]["has_pausable"]
-            and not i["tokensniffer"]["has_mint"]]
+            and not i["tokensniffer"]["has_mint"]) or i["tokensniffer"]["is_forbidden"]]
 
     if len(data) == 0:
         print("tokensniffer check not passed")
