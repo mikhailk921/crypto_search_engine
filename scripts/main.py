@@ -2,7 +2,6 @@
 ## @file main.py
 # @brief search engine code source
 
-import asyncio
 import copy
 import datetime
 import math
@@ -14,7 +13,6 @@ import os
 import json
 import time
 import traceback
-import telebot
 import requests
 
 from src.json_filter import json_filter, transform_result_data
@@ -28,6 +26,8 @@ from src.table import draw_table
 BOT_KEY = "6022347804:AAFVpXBH3Pc-PCO3luaBECH8meD3F-FNdOQ"
 
 TMP_LOCAL_DIR = "tmp"
+PAIR_ADDRESS_WAITING_LIST = []
+WAITING_LIST_TIMER_UPDATE = time.time()
 
 header_data = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.173', 'origin': 'https://cs.money'}
 
@@ -80,13 +80,15 @@ def on_message(ws, message):
     try:
         json_object = json.loads(message)
         if 'pairs' in json_object and not is_processing:
-            #print(json_object)
             rec_data = copy.deepcopy(json_object["pairs"])
             data_is_updated = True
             update_timestamp()
             with open('tmp/json_data.json', 'w') as f:
                 json.dump(rec_data, f)
-        #else:
+        elif False and len(PAIR_ADDRESS_WAITING_LIST) != 0 and time.time() - WAITING_LIST_TIMER_UPDATE > 300:
+            run_pipline(PAIR_ADDRESS_WAITING_LIST, True, "async")
+            is_processing = False
+            rec_data = copy.deepcopy(PAIR_ADDRESS_WAITING_LIST)
             #print("Not received a new data or processing ... {0)  {1}".format(is_processing, message))
 
         if exit_flag:
@@ -200,10 +202,10 @@ def add_more_known_id(data):
         json.dump(checked_ids_list, f)
 
 
-def run_pipline(data, mode, run_forse=False):
+def run_pipline(data, is_rerun, mode, run_forse=False):
     global is_processing
     is_processing = True
-    if not run_forse:
+    if not run_forse and not is_rerun:
         if mode != "async":
             print("Len before check knows ids {0}".format(len(data)))
         data = check_known_id(data)
@@ -223,7 +225,7 @@ def run_pipline(data, mode, run_forse=False):
     if mode == "async":
         for item in data:
             print("\n*********************")
-            print("{0} : {1} :  {2}".format(datetime.datetime.now(), item["baseToken"]["name"], item["pairAddress"]))
+            print("{0} : {1} :  {2}".format(datetime.datetime.now(), item["baseToken"]["name"], item["pairAddress"].lower()))
     data = json_filter(data)
     # print(json.dumps(data[0]))
     ### dextools
@@ -250,9 +252,6 @@ def run_pipline(data, mode, run_forse=False):
 
     if mode == "async":
         print("Len after dextools filter {0}".format(len(data)))
-
-    with open('tmp/dexscreener_and_dextools_data.json', 'w') as f:
-        json.dump(data, f)
     # print(json.dumps(data[0]))
 
     if len(data) == 0:
@@ -278,8 +277,6 @@ def run_pipline(data, mode, run_forse=False):
         print("honypot check not passed")
         return
 
-    with open('tmp/honeypot_data.json', 'w') as f:
-        json.dump(data, f)
 
     ### tokensniffer
     if len(data) != 0:
@@ -288,7 +285,10 @@ def run_pipline(data, mode, run_forse=False):
     for item in data:
         print_statistics(len(data), counter)
         time.sleep(1)
-        result = get_tokensniffer_data(item["baseToken"]["address"])
+        result = get_tokensniffer_data(item["baseToken"]["address"], is_rerun)
+        if result["is_forbidden"] or result["is_pending"]:
+            print("tokensniffer check for baseToken {0} forbidden or pending. Adding to waiting list ...".format(item["baseToken"]["address"]))
+            PAIR_ADDRESS_WAITING_LIST.append(item)
         item["tokensniffer"] = result
         counter += 1
     if len(data) != 0:
@@ -296,10 +296,12 @@ def run_pipline(data, mode, run_forse=False):
         print("\n")
 
 
-    data = [i for i in data if ("is_flagged" in i["tokensniffer"]
+    data = [i for i in data if "is_flagged" in i["tokensniffer"]
             and i["tokensniffer"]["adequate_liquidity"] > 5
             and not i["tokensniffer"]["has_pausable"]
-            and not i["tokensniffer"]["has_mint"]) or i["tokensniffer"]["is_forbidden"]]
+            and not i["tokensniffer"]["has_mint"]
+            and not i["tokensniffer"]["is_flagged"]
+            and not i["tokensniffer"]["is_forbidden"]]
 
     if len(data) == 0:
         print("tokensniffer check not passed")
@@ -328,6 +330,7 @@ def run_pipline(data, mode, run_forse=False):
     if len(data) != 0:
         print("*** Start trigger notify")
         trigger_notification(data)
+        print("*** notify was sent")
 
 
 def command_line_monitor():
@@ -359,6 +362,7 @@ if __name__ == '__main__':
     mode = "async"
     data = None
     run_forse = False
+    is_rerun = False
 
     if mode == "async":
         #asyncio.run(run_async())
@@ -372,7 +376,7 @@ if __name__ == '__main__':
 
         while not exit_flag:
             if data_is_updated:
-                run_pipline(rec_data, mode)
+                run_pipline(rec_data, is_rerun, mode)
                 data_is_updated = False
                 is_processing = False
             time.sleep(1)

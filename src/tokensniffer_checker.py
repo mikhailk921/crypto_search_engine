@@ -7,14 +7,15 @@ from time import sleep
 import requests
 
 
-def get_tokensniffer_data(baseTokenAddress):
+def get_tokensniffer_data(baseTokenAddress, is_rerun=False):
     url = "https://tokensniffer.com/api/v2/tokens/1/{0}?include_metrics=true&include_tests=false&apikey=dafe4651dc541b6516e142219c947cf9a8e70884".format(baseTokenAddress)
     headers = {"accept": "application/json"}
 
     counter = 0
+    forbidden_counter = 0
     result = None
     response = None
-    while counter < 10:
+    while counter < 30 and forbidden_counter < 10:
         counter += 1
         response = requests.get(url, headers=headers)
         text = response.text
@@ -40,9 +41,11 @@ def get_tokensniffer_data(baseTokenAddress):
                 "has_pausable": True,
                 "has_mint": True,
                 "is_forbidden": False,
+                "is_pending": False,
             }
         if "html" in text:
-            sleep(1)
+            forbidden_counter += 1
+            sleep(3)
             continue
         result = json.loads(text)
         #print(json.dumps(result))
@@ -53,7 +56,7 @@ def get_tokensniffer_data(baseTokenAddress):
             continue
         break
 
-    if result is None:
+    if result is None or ("status" in result and result["status"] == "pending"):
         print("\ntokensniffer result is None...  {0}".format(response.text))
         return {
             "is_flagged": False,
@@ -73,6 +76,7 @@ def get_tokensniffer_data(baseTokenAddress):
             "has_pausable": True,
             "has_mint": True,
             "is_forbidden": True if "html" in response.text else False,
+            "is_pending": True if ("status" in result and result["status"] == "pending") else False,
         }
 
     return {
@@ -89,10 +93,11 @@ def get_tokensniffer_data(baseTokenAddress):
         # initial liquidity ...
         "score": result["score"],
         "owner_balance": result["balances"]["owner_balance"],
-        "adequate_liquidity": result["pools"][0]["base_reserve"],
+        "adequate_liquidity": result["pools"][0]["base_reserve"] if len(result["pools"]) > 0 else 0,
         "has_pausable": result["contract"]["has_pausable"] if "has_pausable" in result["contract"] else False,
         "has_mint": result["contract"]["has_mint"] if "has_mint" in result["contract"] else False,
         "is_forbidden": False,
+        "is_pending": False,
     }
 
 
