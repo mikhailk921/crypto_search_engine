@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-## @file main.py
+# @file main.py
 # @brief search engine code source
 
 import copy
@@ -21,7 +21,6 @@ from src.honeypot_checker import isHoneyPot
 from src.tokensniffer_checker import get_tokensniffer_data
 from src.table import draw_table
 
-
 # tg bot api
 BOT_KEY = "6022347804:AAFVpXBH3Pc-PCO3luaBECH8meD3F-FNdOQ"
 
@@ -29,7 +28,9 @@ TMP_LOCAL_DIR = "tmp"
 PAIR_ADDRESS_WAITING_LIST = []
 WAITING_LIST_TIMER_UPDATE = time.time()
 
-header_data = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.173', 'origin': 'https://cs.money'}
+header_data = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.173',
+    'origin': 'https://cs.money'}
 
 header = {
     'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
@@ -51,17 +52,19 @@ def print_statistics(total_length, processed_items):
         return
     total = math.floor((processed_items / total_length) * 100)
     sys.stdout.write('\r')
-    # the exact output you're looking for:
     sys.stdout.write(
-        "[%-100s] %d%% total: %d  processed: %d  "
-        % ('=' * int(total + 1), total, total_length, processed_items))
+        "[%-100s] %d%% total: %d  processed: %d  " % ('=' * int(total + 1), total, total_length, processed_items))
     sys.stdout.flush()
+
+
+def end_print_statistics(total_length):
+    print_statistics(total_length, total_length)
+    print("\n")
 
 
 def update_timestamp():
     tm = "Data status updated {0}".format(time.time())
     sys.stdout.write('\r')
-    # the exact output you're looking for:
     sys.stdout.write(tm)
     sys.stdout.flush()
 
@@ -86,20 +89,19 @@ def on_message(ws, message):
             with open('tmp/json_data.json', 'w') as f:
                 json.dump(rec_data, f)
         elif False and len(PAIR_ADDRESS_WAITING_LIST) != 0 and time.time() - WAITING_LIST_TIMER_UPDATE > 300:
-            run_pipline(PAIR_ADDRESS_WAITING_LIST, True, "async")
+            run_pipline(PAIR_ADDRESS_WAITING_LIST, True)
             is_processing = False
             rec_data = copy.deepcopy(PAIR_ADDRESS_WAITING_LIST)
-            #print("Not received a new data or processing ... {0)  {1}".format(is_processing, message))
 
         if exit_flag:
             print("Ending web socket thread")
             ws.close()
-    except:
-        print(traceback.format_exc())
+    except Exception as e:
+        print(e)
 
 
 def run_web_socket_async():
-    print("It's new thread")
+    print("Start new web socket async thread")
     uri = "wss://io.dexscreener.com/dex/screener/pairs/h6/1?rankBy[key]=volume&rankBy[order]=desc&filters[pairAge][max]=24&filters[liquidity][min]=10000&filters[chainIds][0]=ethereum"
     print("url = {0}".format(uri))
 
@@ -110,76 +112,18 @@ def run_web_socket_async():
         ws.run_forever(ping_timeout=20)
 
     print("Closing...")
-    #ws.close()
-    #print("Connection closed")
 
 
-def run_async():
-    print("Start new web socket async thread")
-    # async_task = asyncio.get_event_loop().create_task(run_web_socket_async())
-    #async_task = asyncio.create_task(run_web_socket_async())
-    run_web_socket_async()
-
-    # while not rec_data:
-    #     time.sleep(5)
-    #     print("Waiting data ...")
-    #
-    # #print("data = {0}".format(rec_data))
-    #
-    # with open('tmp/json_data.json', 'w') as f:
-    #     json.dump(rec_data, f)
-
-
-def run_web_socket_sync():
-    global rec_data
-    uri = "wss://io.dexscreener.com/dex/screener/pairs/h6/1?rankBy[key]=volume&rankBy[order]=desc&filters[pairAge][max]=24&filters[liquidity][min]=10000&filters[chainIds][0]=ethereum"
-    #uri = "wss://io.dexscreener.com/dex/screener/pairs/h6/1?filters[chainIds][0]=ethereum"
-    ws = websocket.WebSocket()
-    ws.connect(uri, headers=header_data, cookie=cookie_string)
-    print("Connected")
-
-    while True:
-        print("Waiting ...")
-        time.sleep(1)
-        message = ws.recv()
-        if not message:
-            continue
-        try:
-            json_object = json.loads(message)
-            if not rec_data and 'pairs' in json_object.keys():
-                #print(json_object)
-                rec_data = json_object["pairs"]
-                print("Saved")
-                break
-        except:
-            print(traceback.format_exc())
-
-    print("Closing socket...")
-    ws.close()
-    print("Connection closed")
-
-
-def run_sync():
-    run_web_socket_sync()
-    #print("data = {0}". format(rec_data))
-    with open('tmp/json_data.json', 'w') as f:
-        json.dump(rec_data, f)
-    return rec_data
-
-
-def parse_data_from_file(mode, path=None):
-    if mode == "from_file":
-        with open(path, 'r') as json_file:
-            data = json.load(json_file)
-            #print(data)
-            return data
+def parse_data_from_file(path):
+    with open(path, 'r') as json_file:
+        return json.load(json_file)
 
 
 def check_known_id(data):
     with open("checked_ids_storage.json", 'r') as validated_data_file:
         checked_ids_list = json.load(validated_data_file)
         return [i for i in data if not
-                next((j for j in checked_ids_list if j["pairAddress"] == i["pairAddress"]), None)]
+        next((j for j in checked_ids_list if j["pairAddress"] == i["pairAddress"]), None)]
 
 
 def add_more_known_id(data):
@@ -202,35 +146,27 @@ def add_more_known_id(data):
         json.dump(checked_ids_list, f)
 
 
-def run_pipline(data, is_rerun, mode, run_forse=False):
+def run_pipline(data, is_rerun, run_forse=False):
     global is_processing
     is_processing = True
     if not run_forse and not is_rerun:
-        if mode != "async":
-            print("Len before check knows ids {0}".format(len(data)))
         data = check_known_id(data)
-        if mode != "async":
-            print("Len after check knows ids {0}".format(len(data)))
         add_more_known_id(data)
 
     if len(data) == 0 and not run_forse:
-        if mode != "async":
-            print("No new coins received. All received coins have already been verified. Script completing")
         return
-        #exit(0)
-    # print(json.dumps(data))
 
-    if len(data) != 0:
-        print("Start filtering")
-    if mode == "async":
-        for item in data:
-            print("\n*********************")
-            print("{0} : {1} :  {2}".format(datetime.datetime.now(), item["baseToken"]["name"], item["pairAddress"].lower()))
+    print("Start filtering")
+    for item in data:
+        print("\n*********************")
+        print("{0} : {1} : {2}".format(datetime.datetime.now(), item["baseToken"]["name"], item["pairAddress"].lower()))
     data = json_filter(data)
-    # print(json.dumps(data[0]))
+
+    if len(data) == 0:
+        return print("Base json check not passed")
+
     ### dextools
-    if len(data) != 0:
-        print("Start dextool checker, length {0}".format(len(data)))
+    print("Start dextool checker, length {0}".format(len(data)))
     counter = 0
     for item in data:
         time.sleep(1)
@@ -238,29 +174,20 @@ def run_pipline(data, is_rerun, mode, run_forse=False):
         result = get_dextools_data(item["pairAddress"])
         item["dextools"] = result
         counter += 1
-    if len(data) != 0:
-        print_statistics(len(data), counter)
-        print("\n")
+    end_print_statistics(len(data))
 
-    #data = [i for i in data if "top10_bauer" in i["dextools"]]
-
-    if mode == "async":
-        print("Len before dextools filter {0}".format(len(data)))
+    print("Len before dextools filter {0}".format(len(data)))
     data = [i for i in data if
             not i["dextools"]["is_honeypot"] and not i["dextools"]["is_blacklisted"] and not i["dextools"][
                 "anti_whale_modifiable"]]
 
-    if mode == "async":
-        print("Len after dextools filter {0}".format(len(data)))
-    # print(json.dumps(data[0]))
+    print("Len after dextools filter {0}".format(len(data)))
 
     if len(data) == 0:
-        print("dextools check not passed")
-        return
+        return print("dextools check not passed")
 
     ### honypot
-    if len(data) != 0:
-        print("Start  honypot checker, length = {0}".format(len(data)))
+    print("Start  honypot checker, length = {0}".format(len(data)))
     counter = 0
     for item in data:
         print_statistics(len(data), counter)
@@ -268,33 +195,26 @@ def run_pipline(data, is_rerun, mode, run_forse=False):
         result = isHoneyPot(item["baseToken"]["address"])  # item["pairAddress"])
         item["isHoneyPot"] = result
         counter += 1
-    if len(data) != 0:
-        print_statistics(len(data), counter)
-        print("\n")
+    end_print_statistics(len(data))
 
     data = [i for i in data if not i["isHoneyPot"]]
     if len(data) == 0:
-        print("honypot check not passed")
-        return
-
+        return print("honypot check not passed")
 
     ### tokensniffer
-    if len(data) != 0:
-        print("Start tokensniffer, length = {0}".format(len(data)))
+    print("Start tokensniffer, length = {0}".format(len(data)))
     counter = 0
     for item in data:
         print_statistics(len(data), counter)
         time.sleep(1)
         result = get_tokensniffer_data(item["baseToken"]["address"], is_rerun)
         if result["is_forbidden"] or result["is_pending"]:
-            print("tokensniffer check for baseToken {0} forbidden or pending. Adding to waiting list ...".format(item["baseToken"]["address"]))
+            print("tokensniffer check for baseToken {0} forbidden or pending. Adding to waiting list ...".format(
+                item["baseToken"]["address"]))
             PAIR_ADDRESS_WAITING_LIST.append(item)
         item["tokensniffer"] = result
         counter += 1
-    if len(data) != 0:
-        print_statistics(len(data), counter)
-        print("\n")
-
+    end_print_statistics(len(data))
 
     data = [i for i in data if "is_flagged" in i["tokensniffer"]
             and i["tokensniffer"]["adequate_liquidity"] > 5
@@ -304,12 +224,9 @@ def run_pipline(data, is_rerun, mode, run_forse=False):
             and not i["tokensniffer"]["is_forbidden"]]
 
     if len(data) == 0:
-        print("tokensniffer check not passed")
-        return
+        return print("tokensniffer check not passed")
 
     print("Result data length = {0}".format(len(data)))
-    # if len(data) != 0:
-    #    print(json.dumps(data[0]))
     data = transform_result_data(data)
     with open('result.json', 'w') as f:
         json.dump(data, f)
@@ -318,7 +235,10 @@ def run_pipline(data, is_rerun, mode, run_forse=False):
 
     def trigger_notification(data):
         for item in data:
-            template = "----------NEW COIN-----------\n\nName: {0}\nAddress: {1}\nLiquidity: {2}\nisHoneypot: {3}\nisBlacklisted: {4}\nisFlagged: {5}\nisSellable: {6}\nTax: {7} / {8}\nisRisk: {9}\nBorn:{10}\nSocials: {11}\n\n{12}\n\n______________________".format(item["Name"],item["Address"],item["Liquidity"],item["is_honeypot"],item["is_blacklisted"],item["TSflag"],item["TSsellable"],item["Buy fee"],item["Sell fee"],item["Risk Level"],item["CreatedAt"],item["Social"],item["TSLink"])
+            template = "----------NEW COIN-----------\n\nName: {0}\nAddress: {1}\nLiquidity: {2}\nisHoneypot: {3}\nisBlacklisted: {4}\nisFlagged: {5}\nisSellable: {6}\nTax: {7} / {8}\nisRisk: {9}\nBorn:{10}\nSocials: {11}\n\n{12}\n\n______________________".format(
+                item["Name"], item["Address"], item["Liquidity"], item["is_honeypot"], item["is_blacklisted"],
+                item["TSflag"], item["TSsellable"], item["Buy fee"], item["Sell fee"], item["Risk Level"],
+                item["CreatedAt"], item["Social"], item["TSLink"])
             apiToken = BOT_KEY
             chatID = '-1001933070742'
             apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
@@ -326,15 +246,15 @@ def run_pipline(data, is_rerun, mode, run_forse=False):
                 requests.post(apiURL, json={'chat_id': chatID, 'text': template})
             except Exception as e:
                 print(e)
-        
+
     if len(data) != 0:
         print("*** Start trigger notify")
         trigger_notification(data)
         print("*** notify was sent")
 
 
-def command_line_monitor():
-    print("Start new command monitor thread")
+def stdin_listener():
+    print("Start new stdin listener thread")
     global exit_flag
 
     while True:
@@ -342,10 +262,8 @@ def command_line_monitor():
         print("Input command: {0}".format(line))
         if line == "q":
             exit_flag = True
-
-            print("Ending command monitor thread")
+            print("Ending stdin listener thread")
             return
-
 
 
 if __name__ == '__main__':
@@ -358,42 +276,26 @@ if __name__ == '__main__':
 
     init()
     chainId = "ethereum"
-    mode = None
-    mode = "async"
     data = None
     run_forse = False
     is_rerun = False
 
-    if mode == "async":
-        #asyncio.run(run_async())
-        web_socket_thread = Thread(target=run_async)
-        command_line_monitor_thread = Thread(target=command_line_monitor)
+    web_socket_thread = Thread(target=run_web_socket_async)
+    command_line_monitor_thread = Thread(target=stdin_listener)
 
-        web_socket_thread.start()
+    web_socket_thread.start()
+    if enable_command_monitor is True:
+        command_line_monitor_thread.start()
 
-        if enable_command_monitor is True:
-            command_line_monitor_thread.start()
+    while not exit_flag:
+        if data_is_updated:
+            run_pipline(rec_data, is_rerun)
+            data_is_updated = False
+            is_processing = False
+        time.sleep(1)
 
-        while not exit_flag:
-            if data_is_updated:
-                run_pipline(rec_data, is_rerun, mode)
-                data_is_updated = False
-                is_processing = False
-            time.sleep(1)
+    web_socket_thread.join()
+    if enable_command_monitor is True:
+        command_line_monitor_thread.join()
 
-        web_socket_thread.join()
-        if enable_command_monitor is True:
-            command_line_monitor_thread.join()
-
-    elif mode == "sync":
-        data = run_sync()
-        run_pipline(data, mode)
-    else:
-        data = parse_data_from_file("from_file", "tmp/json_data.json")
-
-
-
-    #print(json.dumps(data))
-
-
-
+    # data = parse_data_from_file("tmp/json_data.json")
