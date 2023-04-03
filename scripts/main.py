@@ -192,8 +192,9 @@ def run_pipline(data, is_rerun, run_forse=False):
     for item in data:
         print_statistics(len(data), counter)
         time.sleep(1)
-        result = isHoneyPot(item["baseToken"]["address"])  # item["pairAddress"])
-        item["isHoneyPot"] = result
+        if "address" in item["baseToken"]:
+            result = isHoneyPot(item["baseToken"]["address"])  # item["pairAddress"])
+            item["isHoneyPot"] = result
         counter += 1
     end_print_statistics(len(data))
 

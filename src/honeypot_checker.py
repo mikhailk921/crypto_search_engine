@@ -8,6 +8,7 @@ import json
 
 def isHoneyPot(pair_address):
     uri = "https://aywt3wreda.execute-api.eu-west-1.amazonaws.com/default/IsHoneypot?chain=eth&token={0}".format(pair_address)
+    uri = "https://api.honeypot.is/legacy/aws/isHoneypot?token={0}&chain=eth".format(pair_address)
     headers = {
         'cookie': '_pk_id.4.b299=8b297bde9046c6c3.1678695768.;_pk_ref.4.b299=["","",1678776376,"https://www.google.com/"];_pk_ses.4.b299=1;__cf_bm=8h6lzEfoMDjEHC05qtU3j.I3QwF3ptJqVuLTd5y9wUQ-1678778151-0-ATA7nQcdrmalQiJcKIxIPl2C6/2OWzWmo9gRfaycDz+NWZlkhseY/fO69tRKhgGg89kkpFMjuBfx0RSVCQf+4vS2qx8Pl9u3f5nxPoXkQ1xJOSa4Mkk6J5KYvbzwiehDIA==',
         'origin': 'https://www.honeypot.is',
