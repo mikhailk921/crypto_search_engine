@@ -22,7 +22,7 @@ from src.tokensniffer_checker import get_tokensniffer_data
 from src.table import draw_table
 
 # tg bot api
-BOT_KEY = "6022347804:AAFVpXBH3Pc-PCO3luaBECH8meD3F-FNdOQ"
+BOT_KEY = ""
 
 TMP_LOCAL_DIR = "tmp"
 PAIR_ADDRESS_WAITING_LIST = []
@@ -268,6 +268,19 @@ def stdin_listener():
 
 
 if __name__ == '__main__':
+
+    a = {
+        'a':1,
+        'b':2,
+        'c':3,
+        'd':4
+    }
+
+    for i in a:
+        print(i)
+    exit()
+
+
     argv = None
     enable_command_monitor = True
     if len(sys.argv) > 1:

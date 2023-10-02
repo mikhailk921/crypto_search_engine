@@ -10,7 +10,7 @@ from src.dextools_checker import get_dextools_data
 from src.honeypot_checker import isHoneyPot
 from src.tokensniffer_checker import get_tokensniffer_data
 
-BOT_KEY = "5986303026:AAEvJ3Z8PV_1VofFY94Ktq6-0_X38vg5Hbg"
+BOT_KEY = ""
 bot = telebot.TeleBot(BOT_KEY, parse_mode=None)
 
 def run_pipline(pair_address):
